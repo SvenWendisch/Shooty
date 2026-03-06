@@ -67,23 +67,24 @@ class Healthbar():
         pygame.draw.rect(screen, "white", (30, self.game.WINDOW_H / 2 - 200, 30, self.health_bar_length), width=1)
     
 
-# class Enemies(pygame.sprite.Sprite):
-#     def __init__(self, config, pos, groups):
-#         super().__init__(groups)
-#         self.image = config["surf"]
-#         self.rect = self.image.get_ferct(center = pos)
-#         self.pos = pygame.Vector2(self.rect.center)
-#         self.direction = pygame.Vector2(self.player.pos - self.pos).normalize()
+class Enemies(pygame.sprite.Sprite):
+    def __init__(self, game, config, pos, groups):
+        super().__init__(groups)
+        self.game = game
+        self.image = config["surf"]
+        self.rect = self.image.get_frect(center = pos)
+        self.pos = pygame.Vector2(self.rect.center)
+        self.direction = pygame.Vector2(self.game.player.pos - self.pos).normalize()
 
-#         self.speed = config["speed"]
-#         self.hp = config["hp"]
+        self.speed = config["speed"]
+        self.hp = config["hp"]
 
-#     def move_enemie(self, dt):
-#         self.pos += self.speed * self.direction
-#         self.rect.center = self.pos
+    def move_enemie(self, dt):
+        self.pos += self.speed * self.direction * dt
+        self.rect.center = self.pos
 
-#     def update(self, dt):
-#         self.move_enemie(dt)
+    def update(self, dt):
+        self.move_enemie(dt)
 
 class Laser(pygame.sprite.Sprite):
     def __init__(self, game, surf, pos, player_pos, groups):
@@ -147,6 +148,9 @@ class Game():
         self.from_color = (0,0,0)
         self.to_color = (30,30,30)
         self.duration = 5.0
+
+        self.enemie_event = pygame.event.custom_type()
+        pygame.time.set_timer(self.enemie_event, 500)
 
         # assets
         self.player_surf = paste_path("C:/Users/User/Projekte/Sprites/shooty.png")
@@ -212,8 +216,9 @@ class Game():
             self.to_color = random.choice(self.colors)
             self.start_time = self.now
 
-
+    
     def get_events(self):
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running, self.playing = False, False
@@ -221,6 +226,12 @@ class Game():
                 self.offset = 40
                 self.start_pos = self.player.pos + self.player.direction * self.offset
                 Laser(self, self.laser_surf, self.start_pos, self.player.pos, (self.all_sprites, self.laser_sprites))
+
+            if event.type == self.enemie_event:
+                x, y = random_spawn(self.WINDOW_W, self.WINDOW_H, 140)
+                enemie_type = random.choice(list(self.ENEMIES.keys()))
+                config = self.ENEMIES[enemie_type]
+                Enemies(self, config, (x, y), (self.all_sprites, self.enemie_sprites))
             
 
     def game_loop(self):
