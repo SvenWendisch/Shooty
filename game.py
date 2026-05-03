@@ -47,7 +47,9 @@ class Player(pygame.sprite.Sprite):
             self.current_health = self.max_health
     
     def rotate_turret(self,dt):
-        self.direction = pygame.Vector2(self.game.mouse_pos - self.pos).normalize()
+        vec = pygame.Vector2(self.game.mouse_pos - self.pos)
+        if  vec.length() > 0:
+            self.direction = vec.normalize()
         self.angle = math.degrees(math.atan2(-self.direction.y, self.direction.x)) - 90
         self.image = pygame.transform.rotozoom(self.master, self.angle, 1)
         self.rect = self.image.get_frect(center = self.pos)
@@ -78,6 +80,7 @@ class Enemies(pygame.sprite.Sprite):
 
         self.speed = config["speed"]
         self.hp = config["hp"]
+        self.damage = config["damage"]
 
     def move_enemie(self, dt):
         self.pos += self.speed * self.direction * dt
@@ -134,6 +137,7 @@ class Points(pygame.sprite.Sprite):
 class Game():
     def __init__(self):
         pygame.init()
+        self.state = "menu"
         self.WINDOW_W, self.WINDOW_H = 1400, 750
         self.screen = pygame.display.set_mode((self.WINDOW_W, self.WINDOW_H))
         pygame.display.set_caption("SHOOTY")
@@ -153,18 +157,18 @@ class Game():
         pygame.time.set_timer(self.enemie_event, 500)
 
         # assets
-        self.player_surf = paste_path("C:/Users/User/Projekte/Sprites/shooty.png")
-        self.laser_surf = paste_path("C:/Users/User/Projekte/Sprites/shooty_laser_l.png")
-        self.points_surf = paste_path("C:/Users/User/Projekte/Sprites/shooty_laser_l.png")
+        self.player_surf = paste_path("Sprites/shooty.png")
+        self.laser_surf = paste_path("Sprites/shooty_laser_l.png")
+        #self.points_surf = paste_path("Sprites/.png")
 
-        self.cute_surf = paste_path("C:/Users/User/Projekte/Sprites/enemie_cute.png")
-        self.terminator_surf = paste_path("C:/Users/User/Projekte/Sprites/enemie_terminator.png")
-        self.alien_surf = paste_path("C:/Users/User/Projekte/Sprites/enemie_alien.png")
-        self.devil_surf = paste_path("C:/Users/User/Projekte/Sprites/enemie_devil.png")
-        self.marimon_surf = paste_path("C:/Users/User/Projekte/Sprites/enemie_marimon.png")
-        self.scream_surf = paste_path("C:/Users/User/Projekte/Sprites/enemie_scream.png")
-        self.poison_surf = paste_path("C:/Users/User/Projekte/Sprites/enemie_poison.png")
-        self.doheoni_surf = paste_path("C:/Users/User/Projekte/Sprites/enemie_dohoeni.png")
+        self.cute_surf = paste_path("Sprites/enemie_cute.png")
+        self.terminator_surf = paste_path("Sprites/enemie_terminator.png")
+        self.alien_surf = paste_path("Sprites/enemie_alien.png")
+        self.devil_surf = paste_path("Sprites/enemie_devil.png")
+        self.marimon_surf = paste_path("Sprites/enemie_marimon.png")
+        self.scream_surf = paste_path("Sprites/enemie_scream.png")
+        self.poison_surf = paste_path("Sprites/enemie_poison.png")
+        self.doheoni_surf = paste_path("Sprites/enemie_dohoeni.png")
 
 
         # config
@@ -206,6 +210,59 @@ class Game():
         
         self.healthbar = Healthbar(self, self.player)
 
+    def run(self):
+        while self.running:
+            self.now = pygame.time.get_ticks()
+            self.dt = self.clock.tick() / 1000
+            self.mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
+
+            if self.state == "menu":
+                self.menu_loop()
+            
+            if self.state == "playing":
+                self.game_loop()
+            
+            if self.state == "game_over":
+                self.game_over_loop()
+            
+            pygame.display.update()
+            
+    def menu_loop(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.state = "playing"
+
+        self.screen.fill("white")
+
+    
+    def game_over_loop(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.reset_game()
+                self.state = "playing"
+
+        self.screen.fill("black")
+
+    def reset_game(self):
+        self.all_sprites.empty()
+        self.laser_sprites.empty()
+        self.enemie_sprites.empty()
+        self.point_sprites.empty()
+
+        self.player = Player(self, self.all_sprites, self.player_surf)
+        self.healthbar = Healthbar(self, self.player)
+
+        self.start_time = pygame.time.get_ticks()
+        self.from_color = (0, 0, 0)
+        self.to_color = (30, 30, 30)
+
+
     def change_color(self):
         self.elapsed = (self.now - self.start_time)/1000
         self.t = pygame.math.clamp(self.elapsed/self.duration, 0, 1)
@@ -232,19 +289,31 @@ class Game():
                 enemie_type = random.choice(list(self.ENEMIES.keys()))
                 config = self.ENEMIES[enemie_type]
                 Enemies(self, config, (x, y), (self.all_sprites, self.enemie_sprites))
-            
+
+    def collisions(self):
+        self.hits = pygame.sprite.groupcollide(self.laser_sprites, self.enemie_sprites, True, False)
+
+        for laser, enemies in self.hits.items():
+            for enemie in enemies:
+                enemie.hp -= laser.damage
+
+                if enemie.hp <= 0:
+                    enemie.kill()
+        
+        self.attacking_enemie = pygame.sprite.spritecollide(self.player, self.enemie_sprites, True)
+
+        for enemie in self.attacking_enemie:
+            self.player.get_damage(enemie.damage)
+
+            if self.player.current_health <= 0:
+                self.state = "game_over"
+
 
     def game_loop(self):
-        while self.playing:
-            self.now = pygame.time.get_ticks()
-            self.dt = self.clock.tick() / 1000
-            self.mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
-            self.change_color()
-            self.get_events()
-            self.all_sprites.update(self.dt)
-            self.screen.fill((self.current_color))
-            self.healthbar.draw_healthbar(self.screen)
-            self.all_sprites.draw(self.screen)
-            self.screen.blit(self.ENEMIES["cute"]["surf"], (100, 100))
-            
-            pygame.display.update()
+        self.change_color()
+        self.get_events()
+        self.all_sprites.update(self.dt)
+        self.collisions()
+        self.screen.fill((self.current_color))
+        self.all_sprites.draw(self.screen)
+        self.healthbar.draw_healthbar(self.screen)
