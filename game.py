@@ -67,6 +67,7 @@ class Healthbar():
     def draw_healthbar(self, screen):
         pygame.draw.rect(screen, "green", (30, self.game.WINDOW_H / 2 - 200 + (self.player.max_health * self.health_ratio) - (self.player.current_health * self.health_ratio),30,self.player.current_health * self.health_ratio))
         pygame.draw.rect(screen, "white", (30, self.game.WINDOW_H / 2 - 200, 30, self.health_bar_length), width=1)
+        screen.blit(self.game.healthbar_surf, (25,170))
     
 
 class Enemies(pygame.sprite.Sprite):
@@ -157,18 +158,19 @@ class Game():
         pygame.time.set_timer(self.enemie_event, 500)
 
         # assets
-        self.player_surf = paste_path("Sprites/shooty.png")
-        self.laser_surf = paste_path("Sprites/shooty_laser_l.png")
+        self.player_surf = paste_path("SHOOTY/Sprites/shooty.png")
+        self.laser_surf = paste_path("SHOOTY/Sprites/shooty_laser_l.png")
         #self.points_surf = paste_path("Sprites/.png")
+        self.healthbar_surf = paste_path("SHOOTY/Sprites/health_bar.png")
 
-        self.cute_surf = paste_path("Sprites/enemie_cute.png")
-        self.terminator_surf = paste_path("Sprites/enemie_terminator.png")
-        self.alien_surf = paste_path("Sprites/enemie_alien.png")
-        self.devil_surf = paste_path("Sprites/enemie_devil.png")
-        self.marimon_surf = paste_path("Sprites/enemie_marimon.png")
-        self.scream_surf = paste_path("Sprites/enemie_scream.png")
-        self.poison_surf = paste_path("Sprites/enemie_poison.png")
-        self.doheoni_surf = paste_path("Sprites/enemie_dohoeni.png")
+        self.cute_surf = paste_path("SHOOTY/Sprites/enemie_cute.png")
+        self.terminator_surf = paste_path("SHOOTY/Sprites/enemie_terminator.png")
+        self.alien_surf = paste_path("SHOOTY/Sprites/enemie_alien.png")
+        self.devil_surf = paste_path("SHOOTY/Sprites/enemie_devil.png")
+        self.marimon_surf = paste_path("SHOOTY/Sprites/enemie_marimon.png")
+        self.scream_surf = paste_path("SHOOTY/Sprites/enemie_scream.png")
+        self.poison_surf = paste_path("SHOOTY/Sprites/enemie_poison.png")
+        self.doheoni_surf = paste_path("SHOOTY/Sprites/enemie_dohoeni.png")
 
 
         # config
@@ -245,7 +247,7 @@ class Game():
             
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.reset_game()
-                self.state = "playing"
+                self.state = "menu"
 
         self.screen.fill("black")
 
