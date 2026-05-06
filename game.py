@@ -71,11 +71,12 @@ class Healthbar():
     
 
 class Enemies(pygame.sprite.Sprite):
-    def __init__(self, game, config, pos, groups):
+    def __init__(self, game, config, name, pos, groups):
         super().__init__(groups)
         self.game = game
         self.image = config["surf"]
         self.rect = self.image.get_frect(center = pos)
+        self.name = name
         self.pos = pygame.Vector2(self.rect.center)
         self.direction = pygame.Vector2(self.game.player.pos - self.pos).normalize()
 
@@ -122,18 +123,23 @@ class Points(pygame.sprite.Sprite):
         self.position = pygame.Vector2(pos)
         self.image = surf
         self.rect = self.image.get_frect(center = self.position)
-        self.speed = 30
+        self.speed = 50
         self.direction = pygame.Vector2(0,1)
+        self.alpha = 255
+        self.fade_speed = 400
+
 
     def points_move(self, dt):
         self.position -= self.direction * self.speed * dt
         self.rect.center = self.position
-    
-   # def points_fade(self):
-
 
     def update(self, dt):
         self.points_move(dt)
+        self.alpha -= self.fade_speed * dt
+        self.image.set_alpha(self.alpha)
+
+        if self.alpha <= 0 :
+            self.kill()
 
 class Game():
     def __init__(self):
@@ -160,8 +166,9 @@ class Game():
         # assets
         self.player_surf = paste_path("SHOOTY/Sprites/shooty.png")
         self.laser_surf = paste_path("SHOOTY/Sprites/shooty_laser_l.png")
-        #self.points_surf = paste_path("Sprites/.png")
+        self.points_surf = paste_path("SHOOTY/Sprites/star.png")
         self.healthbar_surf = paste_path("SHOOTY/Sprites/health_bar.png")
+        self.health_more = paste_path("SHOOTY/Sprites/health_more.png")
 
         self.cute_surf = paste_path("SHOOTY/Sprites/enemie_cute.png")
         self.terminator_surf = paste_path("SHOOTY/Sprites/enemie_terminator.png")
@@ -228,6 +235,12 @@ class Game():
                 self.game_over_loop()
             
             pygame.display.update()
+
+    # font = pygame.font.SysFont("arialblack", 40)
+    # TEXT_COL = (255, 255, 255)
+    # def draw_text(self, text, font, text_col, x, y):
+    #     img = font.render(text, True, text_col)
+    #     self.screen.blit(img,(x, y))
             
     def menu_loop(self):
         for event in pygame.event.get():
@@ -238,6 +251,7 @@ class Game():
                 self.state = "playing"
 
         self.screen.fill("white")
+        # self.draw_text("Press space", self.font, self.TEXT_COL, 100, 100)
 
     
     def game_over_loop(self):
@@ -290,7 +304,7 @@ class Game():
                 x, y = random_spawn(self.WINDOW_W, self.WINDOW_H, 140)
                 enemie_type = random.choice(list(self.ENEMIES.keys()))
                 config = self.ENEMIES[enemie_type]
-                Enemies(self, config, (x, y), (self.all_sprites, self.enemie_sprites))
+                Enemies(self, config, enemie_type, (x, y), (self.all_sprites, self.enemie_sprites))
 
     def collisions(self):
         self.hits = pygame.sprite.groupcollide(self.laser_sprites, self.enemie_sprites, True, False)
@@ -301,14 +315,22 @@ class Game():
 
                 if enemie.hp <= 0:
                     enemie.kill()
+
+            Points(self.points_surf, enemie.rect.center, self.all_sprites)
         
         self.attacking_enemie = pygame.sprite.spritecollide(self.player, self.enemie_sprites, True)
 
         for enemie in self.attacking_enemie:
             self.player.get_damage(enemie.damage)
+            
 
             if self.player.current_health <= 0:
                 self.state = "game_over"
+
+            if enemie.name == "cute":
+                self.player.get_health(25)
+                Points(self.health_more, self.player.rect.center, self.all_sprites)
+            
 
 
     def game_loop(self):
