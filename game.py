@@ -118,10 +118,14 @@ class Laser(pygame.sprite.Sprite):
 
 
 class Points(pygame.sprite.Sprite):
-    def __init__(self, surf, pos, groups):
+    def __init__(self, game, text, pos, groups):
         super().__init__(groups)
+        self.game = game
         self.position = pygame.Vector2(pos)
-        self.image = surf
+        self.text_color = "red"
+        self.text = str(text)
+        self.font = self.game.damage_font
+        self.image = self.font.render(self.text, True, self.text_color)
         self.rect = self.image.get_frect(center = self.position)
         self.speed = 50
         self.direction = pygame.Vector2(0,1)
@@ -159,25 +163,27 @@ class Game():
         self.from_color = (0,0,0)
         self.to_color = (30,30,30)
         self.duration = 5.0
+        self.text_font = pygame.font.Font("Sprites/Pixeltype.ttf")
+        self.damage_font = pygame.font.Font("Sprites/Pixeltype.ttf", 35)
 
         self.enemie_event = pygame.event.custom_type()
         pygame.time.set_timer(self.enemie_event, 500)
 
         # assets
-        self.player_surf = paste_path("SHOOTY/Sprites/shooty.png")
-        self.laser_surf = paste_path("SHOOTY/Sprites/shooty_laser_l.png")
-        self.points_surf = paste_path("SHOOTY/Sprites/star.png")
-        self.healthbar_surf = paste_path("SHOOTY/Sprites/health_bar.png")
-        self.health_more = paste_path("SHOOTY/Sprites/health_more.png")
+        self.player_surf = paste_path("Sprites/shooty.png")
+        self.laser_surf = paste_path("Sprites/shooty_laser_l.png")
+        self.points_surf = paste_path("Sprites/star.png")
+        self.healthbar_surf = paste_path("Sprites/health_bar.png")
+        self.health_more = paste_path("Sprites/health_more.png")
 
-        self.cute_surf = paste_path("SHOOTY/Sprites/enemie_cute.png")
-        self.terminator_surf = paste_path("SHOOTY/Sprites/enemie_terminator.png")
-        self.alien_surf = paste_path("SHOOTY/Sprites/enemie_alien.png")
-        self.devil_surf = paste_path("SHOOTY/Sprites/enemie_devil.png")
-        self.marimon_surf = paste_path("SHOOTY/Sprites/enemie_marimon.png")
-        self.scream_surf = paste_path("SHOOTY/Sprites/enemie_scream.png")
-        self.poison_surf = paste_path("SHOOTY/Sprites/enemie_poison.png")
-        self.doheoni_surf = paste_path("SHOOTY/Sprites/enemie_dohoeni.png")
+        self.cute_surf = paste_path("Sprites/enemie_cute.png")
+        self.terminator_surf = paste_path("Sprites/enemie_terminator.png")
+        self.alien_surf = paste_path("Sprites/enemie_alien.png")
+        self.devil_surf = paste_path("Sprites/enemie_devil.png")
+        self.marimon_surf = paste_path("Sprites/enemie_marimon.png")
+        self.scream_surf = paste_path("Sprites/enemie_scream.png")
+        self.poison_surf = paste_path("Sprites/enemie_poison.png")
+        self.doheoni_surf = paste_path("Sprites/enemie_dohoeni.png")
 
 
         # config
@@ -241,8 +247,12 @@ class Game():
     # def draw_text(self, text, font, text_col, x, y):
     #     img = font.render(text, True, text_col)
     #     self.screen.blit(img,(x, y))
-            
+    def draw_text(self, text, font, text_color, x, y):
+        self.img = font.render(text, True, text_color)
+        self.screen.blit(self.img, (x, y))
+
     def menu_loop(self):
+        pygame.display.set_caption("SHOOTY - Menu")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -250,8 +260,9 @@ class Game():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.state = "playing"
 
-        self.screen.fill("white")
-        # self.draw_text("Press space", self.font, self.TEXT_COL, 100, 100)
+        self.screen.fill("black")
+        self.menu_mouse_pos = pygame.mouse.get_pos()
+        self.draw_text("Hallo", self.text_font, (255, 255, 255), 100, 100)
 
     
     def game_over_loop(self):
@@ -315,8 +326,8 @@ class Game():
 
                 if enemie.hp <= 0:
                     enemie.kill()
-
-            Points(self.points_surf, enemie.rect.center, self.all_sprites)
+            
+            Points(self, f"-{laser.damage}", enemie.rect.center, self.all_sprites)
         
         self.attacking_enemie = pygame.sprite.spritecollide(self.player, self.enemie_sprites, True)
 
