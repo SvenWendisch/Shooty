@@ -118,11 +118,11 @@ class Laser(pygame.sprite.Sprite):
 
 
 class Points(pygame.sprite.Sprite):
-    def __init__(self, game, text, pos, groups):
+    def __init__(self, game, text, color, pos, groups):
         super().__init__(groups)
         self.game = game
         self.position = pygame.Vector2(pos)
-        self.text_color = "red"
+        self.text_color = color
         self.text = str(text)
         self.font = self.game.damage_font
         self.image = self.font.render(self.text, True, self.text_color)
@@ -327,7 +327,7 @@ class Game():
                 if enemie.hp <= 0:
                     enemie.kill()
             
-            Points(self, f"-{laser.damage}", enemie.rect.center, self.all_sprites)
+            Points(self, f"-{laser.damage}", "red", enemie.rect.center, self.all_sprites)
         
         self.attacking_enemie = pygame.sprite.spritecollide(self.player, self.enemie_sprites, True)
 
@@ -340,7 +340,7 @@ class Game():
 
             if enemie.name == "cute":
                 self.player.get_health(25)
-                Points(self.health_more, self.player.rect.center, self.all_sprites)
+                Points(self, "+ 25", "green", self.player.rect.center, self.all_sprites)
             
 
 
