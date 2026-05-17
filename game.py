@@ -3,7 +3,9 @@ import math
 import random
 
 def paste_path(path):
-    return pygame.image.load(path).convert_alpha()
+    surf = pygame.image.load(path).convert_alpha()
+    rect = surf.get_bounding_rect()
+    return surf.subsurface(rect).copy()
 
 def lerp_color(c1, c2, t):
         return([int(pygame.math.lerp(a, b, t)) for a, b in zip(c1, c2)])
