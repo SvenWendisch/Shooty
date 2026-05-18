@@ -224,7 +224,7 @@ class Game():
                 "surf" : self.terminator_surf, "speed" : 130, "hp" : 100, "damage" : 50, "weigth" : 1,
             },
             "dohoeni": {
-                "surf" : self.doheoni_surf, "speed" : 20, "hp" : 130, "damage" : 50, "weigth" : 1,
+                "surf" : self.doheoni_surf, "speed" : 20, "hp" : 200, "damage" : 50, "weigth" : 1,
             },
             "marimon": {
                 "surf" : self.marimon_surf, "speed" : 100, "hp" : 100, "damage" : 100, "weigth" : 1,
@@ -335,11 +335,21 @@ class Game():
                 config = self.ENEMIES[enemie_type]
                 Enemies(self, config, enemie_type, (x, y), (self.all_sprites, self.enemie_sprites))
 
-    def drop_item(self):
+    def drop_item(self, pos):
+        self.drop_pos = pos
         self.random_number = random.randint(0,100)
         if 0 <= self.random_number < 25 :
             self.item = random.choice(self.ITEM_DROPS)
             if self.item == "health_more":
+                self.screen.blit(self.health_more, self.drop_pos)
+            elif self.item == "health_regen":
+                self.screen.blit(self.health_regen, self.drop_pos)
+            elif self.item == "piercing_shot":
+                self.screen.blit(self.piercing_shot, self.drop_pos)
+            elif self.item =="rapid_fire":
+                self.screen.blit(self.rapid_fire, self.drop_pos)
+            elif self.item =="damage_up":
+                self.screen.blit(self.damage_up, self.drop_pos)
 
             
 
@@ -353,14 +363,16 @@ class Game():
                 if enemie.hp <= 0:
                     enemie.kill()
                     self.score_points += 25
-                    self.drop_item()
+                    self.drop_item(enemie.rect.center)
+                    
             
-            Points(self, f"-{laser.damage}", "red", enemie.rect.center, self.all_sprites)
+            Points(self, f"-{laser.damage}", (255, 62, 176), enemie.rect.center, self.all_sprites)
         
         self.attacking_enemie = pygame.sprite.spritecollide(self.player, self.enemie_sprites, True)
 
         for enemie in self.attacking_enemie:
             self.player.get_damage(enemie.damage)
+            Points(self, f"-{str(enemie.damage)}", "red", self.player.rect.center, self.all_sprites)
             
 
             if self.player.current_health <= 0:
