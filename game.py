@@ -165,7 +165,8 @@ class Game():
         self.from_color = (0,0,0)
         self.to_color = (30,30,30)
         self.duration = 5.0
-        self.text_font = pygame.font.Font("Sprites/Pixeltype.ttf")
+        self.header_font = pygame.font.Font("Sprites/Pixeltype.ttf",200)
+        self.text_font = pygame.font.Font("Sprites/Pixeltype.ttf",50)
         self.damage_font = pygame.font.Font("Sprites/Pixeltype.ttf", 35)
 
         self.enemie_event = pygame.event.custom_type()
@@ -264,7 +265,9 @@ class Game():
 
         self.screen.fill("black")
         self.menu_mouse_pos = pygame.mouse.get_pos()
-        self.draw_text("Hallo", self.text_font, (255, 255, 255), 100, 100)
+        self.draw_text("SHOOTY", self.header_font, (255, 255, 255), 100, 100)
+        self.draw_text("press 'SPACE' to play and to shoot", self.text_font, "white", 100, 300)
+        
 
     
     def game_over_loop(self):
@@ -272,11 +275,14 @@ class Game():
             if event.type == pygame.QUIT:
                 self.running = False
             
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                self.reset_game()
-                self.state = "menu"
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed() [0]:
+                    self.reset_game()
+                    self.state = "menu"
 
         self.screen.fill("black")
+        self.draw_text("You are dead", self.header_font, "white", 100 , 100)
+        self.draw_text("left-click to start a new game", self.text_font, "white", 100 , 300)
 
     def reset_game(self):
         self.all_sprites.empty()
