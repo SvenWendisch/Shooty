@@ -181,9 +181,14 @@ class Game():
         # assets
         self.player_surf = paste_path("Sprites/shooty.png")
         self.laser_surf = paste_path("Sprites/shooty_laser_l.png")
-        self.points_surf = paste_path("Sprites/star.png")
+    
         self.healthbar_surf = paste_path("Sprites/health_bar.png")
+
         self.health_more = paste_path("Sprites/health_more.png")
+        self.health_regen = paste_path("Sprites/health_regen.png")
+        self.piercing_shot = paste_path("Sprites/piercing_shot.png")
+        self.damage_up = paste_path("Sprites/damage_up.png")
+        self.rapid_fire = paste_path("Sprites/rapid_fire.png")
 
         self.cute_surf = paste_path("Sprites/enemie_cute.png")
         self.terminator_surf = paste_path("Sprites/enemie_terminator.png")
@@ -195,34 +200,36 @@ class Game():
         self.doheoni_surf = paste_path("Sprites/enemie_dohoeni.png")
 
 
-        # config
+        self.ITEM_DROPS = ["health_more", "health_regen", "piercing_shot", "rapid_fire", "damage_up"]
+        
+
 
         self.ENEMIES = {
-    "cute": {
-        "surf" : self.cute_surf, "speed" : 200, "hp" : 25, "damage" : 0, "weigth" : 1,
-    },
-    "alien": {
-        "surf" : self.alien_surf, "speed" : 70, "hp" : 80, "damage" : 25, "weigth" : 1,
-    },
-    "scream": {
-        "surf" : self.scream_surf, "speed" : 100, "hp" : 150, "damage" : 25, "weigth" : 1,
-    },
-    "poison": {
-        "surf" : self.poison_surf, "speed" : 100, "hp" : 100, "damage" : 25, "weigth" : 1,
-    },
-    "devil": {
-        "surf" : self.devil_surf, "speed" : 100, "hp" : 100, "damage" : 25, "weigth" : 1,
-    },
-    "terminator": {
-        "surf" : self.terminator_surf, "speed" : 130, "hp" : 100, "damage" : 50, "weigth" : 1,
-    },
-    "dohoeni": {
-        "surf" : self.doheoni_surf, "speed" : 20, "hp" : 130, "damage" : 50, "weigth" : 1,
-    },
-    "marimon": {
-        "surf" : self.marimon_surf, "speed" : 100, "hp" : 100, "damage" : 100, "weigth" : 1,
-    },
-}
+            "cute": {
+                "surf" : self.cute_surf, "speed" : 200, "hp" : 25, "damage" : 0, "weigth" : 1,
+            },
+            "alien": {
+                "surf" : self.alien_surf, "speed" : 70, "hp" : 80, "damage" : 25, "weigth" : 1,
+            },
+            "scream": {
+                "surf" : self.scream_surf, "speed" : 100, "hp" : 150, "damage" : 25, "weigth" : 1,
+            },
+            "poison": {
+                "surf" : self.poison_surf, "speed" : 100, "hp" : 100, "damage" : 25, "weigth" : 1,
+            },
+            "devil": {
+                "surf" : self.devil_surf, "speed" : 100, "hp" : 100, "damage" : 25, "weigth" : 1,
+            },
+            "terminator": {
+                "surf" : self.terminator_surf, "speed" : 130, "hp" : 100, "damage" : 50, "weigth" : 1,
+            },
+            "dohoeni": {
+                "surf" : self.doheoni_surf, "speed" : 20, "hp" : 130, "damage" : 50, "weigth" : 1,
+            },
+            "marimon": {
+                "surf" : self.marimon_surf, "speed" : 100, "hp" : 100, "damage" : 100, "weigth" : 1,
+            },
+        }
 
         # groups
         self.all_sprites = pygame.sprite.Group()
@@ -251,11 +258,7 @@ class Game():
             
             pygame.display.update()
 
-    # font = pygame.font.SysFont("arialblack", 40)
-    # TEXT_COL = (255, 255, 255)
-    # def draw_text(self, text, font, text_col, x, y):
-    #     img = font.render(text, True, text_col)
-    #     self.screen.blit(img,(x, y))
+  
     def draw_text(self, text, font, text_color, x, y):
         self.img = font.render(text, True, text_color)
         self.screen.blit(self.img, (x, y))
@@ -295,6 +298,7 @@ class Game():
         self.laser_sprites.empty()
         self.enemie_sprites.empty()
         self.point_sprites.empty()
+        self.score_points = 0
 
         self.player = Player(self, self.all_sprites, self.player_surf)
         self.healthbar = Healthbar(self, self.player)
@@ -331,6 +335,14 @@ class Game():
                 config = self.ENEMIES[enemie_type]
                 Enemies(self, config, enemie_type, (x, y), (self.all_sprites, self.enemie_sprites))
 
+    def drop_item(self):
+        self.random_number = random.randint(0,100)
+        if 0 <= self.random_number < 25 :
+            self.item = random.choice(self.ITEM_DROPS)
+            if self.item == "health_more":
+
+            
+
     def collisions(self):
         self.hits = pygame.sprite.groupcollide(self.laser_sprites, self.enemie_sprites, True, False)
 
@@ -341,6 +353,7 @@ class Game():
                 if enemie.hp <= 0:
                     enemie.kill()
                     self.score_points += 25
+                    self.drop_item()
             
             Points(self, f"-{laser.damage}", "red", enemie.rect.center, self.all_sprites)
         
