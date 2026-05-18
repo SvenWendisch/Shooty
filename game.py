@@ -146,6 +146,7 @@ class Points(pygame.sprite.Sprite):
 
         if self.alpha <= 0 :
             self.kill()
+        
 
 class Game():
     def __init__(self):
@@ -159,18 +160,23 @@ class Game():
 
         self.mouse_pos = pygame.Vector2(0,0)
 
+        # color management
         self.start_time = pygame.time.get_ticks()
         self.colors = [[87,14,0], [35,87,0], [0,83,87], [0,1,87], [87,0,78], [0,0,0], [50,50,50]]
 
         self.from_color = (0,0,0)
         self.to_color = (30,30,30)
         self.duration = 5.0
+
+        # fonts
         self.header_font = pygame.font.Font("Sprites/Pixeltype.ttf",200)
         self.text_font = pygame.font.Font("Sprites/Pixeltype.ttf",50)
         self.damage_font = pygame.font.Font("Sprites/Pixeltype.ttf", 35)
 
         self.enemie_event = pygame.event.custom_type()
         pygame.time.set_timer(self.enemie_event, 500)
+
+        self.score_points = 0
 
         # assets
         self.player_surf = paste_path("Sprites/shooty.png")
@@ -211,7 +217,7 @@ class Game():
         "surf" : self.terminator_surf, "speed" : 130, "hp" : 100, "damage" : 50, "weigth" : 1,
     },
     "dohoeni": {
-        "surf" : self.doheoni_surf, "speed" : 20, "hp" : 4000, "damage" : 50, "weigth" : 1,
+        "surf" : self.doheoni_surf, "speed" : 20, "hp" : 130, "damage" : 50, "weigth" : 1,
     },
     "marimon": {
         "surf" : self.marimon_surf, "speed" : 100, "hp" : 100, "damage" : 100, "weigth" : 1,
@@ -334,6 +340,7 @@ class Game():
 
                 if enemie.hp <= 0:
                     enemie.kill()
+                    self.score_points += 25
             
             Points(self, f"-{laser.damage}", "red", enemie.rect.center, self.all_sprites)
         
@@ -360,3 +367,4 @@ class Game():
         self.screen.fill((self.current_color))
         self.all_sprites.draw(self.screen)
         self.healthbar.draw_healthbar(self.screen)
+        self.draw_text(str(self.score_points), self.text_font, "white", 650, 50)
